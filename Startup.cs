@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using RealTimeWebAPI.Hubs;
 using RealTimeWebAPI.Services;
 using System;
 using System.Collections.Generic;
@@ -27,9 +28,21 @@ namespace RealTimeWebAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+            {
+                builder
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowAnyOrigin()
+                    .AllowCredentials()
+                    .WithOrigins("http://localhost:4200");
+            }));
+
+            services.AddSignalR();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             // Register the Swagger services
             services.AddSwaggerDocument();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,12 +57,19 @@ namespace RealTimeWebAPI
                 app.UseHsts();
             }
 
+            app.UseCors("CorsPolicy");
+
             app.UseHttpsRedirection();
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<NotificationHub>("/notify");
+            });
             app.UseMvc();
 
             // Register the Swagger generator and the Swagger UI middlewares
             app.UseOpenApi();
             app.UseSwaggerUi3();
+
         }
     }
 }

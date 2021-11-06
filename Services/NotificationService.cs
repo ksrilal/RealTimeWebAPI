@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using RealTimeWebAPI.Models;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace RealTimeWebAPI.Services
 {
-    public class NotificationService : INotificationService
+    public class NotificationService : INotificationService 
     {
         private readonly string _conectionString;
 
@@ -24,9 +25,13 @@ namespace RealTimeWebAPI.Services
 
             using(var connection = new SqlConnection(_conectionString))
             {
-                await connection.ExecuteAsync(query, new { notification.Message, notification.Sender, notification.Reciever, notification.Time });
+                await connection.ExecuteAsync(query, new { 
+                    notification.Message, 
+                    notification.Sender, 
+                    notification.Reciever, 
+                    notification.Time 
+                });
             }
-
             return notification;
         }
 
